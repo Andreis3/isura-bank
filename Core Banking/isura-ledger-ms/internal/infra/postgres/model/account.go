@@ -8,13 +8,13 @@ import (
 )
 
 type Account struct {
-	ID             pgtype.Text
-	ExternalID     pgtype.Text
-	AccountingType pgtype.Text
-	Balance        pgtype.Int8
-	Currency       pgtype.Text
-	CreatedAt      pgtype.Timestamptz
-	UpdatedAt      pgtype.Timestamptz
+	ID          pgtype.Text
+	ExternalID  pgtype.Text
+	AccountType pgtype.Text
+	Balance     pgtype.Int8
+	Currency    pgtype.Text
+	CreatedAt   pgtype.Timestamptz
+	UpdatedAt   pgtype.Timestamptz
 }
 
 func ToAccountModel(domain *account.Account) Account {
@@ -27,8 +27,8 @@ func ToAccountModel(domain *account.Account) Account {
 			String: domain.ExternalID,
 			Valid:  true,
 		},
-		AccountingType: pgtype.Text{
-			String: string(domain.AccountingType),
+		AccountType: pgtype.Text{
+			String: string(domain.AccountType),
 			Valid:  true,
 		},
 		Balance: pgtype.Int8{
@@ -57,11 +57,11 @@ func ToAccountDomain(model Account) (*account.Account, error) {
 	}
 
 	return &account.Account{
-		ID:             account.AccountID(model.ID.String),
-		ExternalID:     model.ExternalID.String,
-		Balance:        balance,
-		AccountingType: account.AccountingType(model.AccountingType.String),
-		CreatedAt:      model.CreatedAt.Time,
-		UpdatedAt:      model.UpdatedAt.Time,
+		ID:          account.AccountID(model.ID.String),
+		ExternalID:  model.ExternalID.String,
+		Balance:     balance,
+		AccountType: account.AccountType(model.AccountType.String),
+		CreatedAt:   model.CreatedAt.Time,
+		UpdatedAt:   model.UpdatedAt.Time,
 	}, nil
 }

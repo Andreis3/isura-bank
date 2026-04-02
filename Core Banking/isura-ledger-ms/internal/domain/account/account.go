@@ -13,16 +13,16 @@ var (
 )
 
 type AccountID string
-type AccountingType string
+type AccountType string
 
 const (
-	Asset     AccountingType = "ASSET"
-	Liability AccountingType = "LIABILITY"
-	Revenue   AccountingType = "REVENUE"
-	Expense   AccountingType = "EXPENSE"
+	Asset     AccountType = "ASSET"
+	Liability AccountType = "LIABILITY"
+	Revenue   AccountType = "REVENUE"
+	Expense   AccountType = "EXPENSE"
 )
 
-func (a AccountingType) IsValid() bool {
+func (a AccountType) IsValid() bool {
 	switch a {
 	case Asset, Liability, Revenue, Expense:
 		return true
@@ -31,15 +31,15 @@ func (a AccountingType) IsValid() bool {
 }
 
 type Account struct {
-	ID             AccountID
-	ExternalID     string
-	AccountingType AccountingType
-	Balance        money.Money
-	CreatedAt      time.Time
-	UpdatedAt      time.Time
+	ID          AccountID
+	ExternalID  string
+	AccountType AccountType
+	Balance     money.Money
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
 }
 
-func NewAccount(accountID AccountID, externalID string, accountingType AccountingType, currency money.Currency) (*Account, error) {
+func NewAccount(accountID AccountID, externalID string, accountingType AccountType, currency money.Currency) (*Account, error) {
 	if !accountingType.IsValid() {
 		return nil, ErrInvalidAccountingType
 	}
@@ -56,11 +56,11 @@ func NewAccount(accountID AccountID, externalID string, accountingType Accountin
 	now := time.Now()
 
 	return &Account{
-		ID:             accountID,
-		ExternalID:     externalID,
-		AccountingType: accountingType,
-		Balance:        balance,
-		CreatedAt:      now,
-		UpdatedAt:      now,
+		ID:          accountID,
+		ExternalID:  externalID,
+		AccountType: accountingType,
+		Balance:     balance,
+		CreatedAt:   now,
+		UpdatedAt:   now,
 	}, nil
 }

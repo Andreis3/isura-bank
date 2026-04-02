@@ -16,8 +16,8 @@ type Outbox struct {
 	Status        pgtype.Text
 	Attempts      pgtype.Int2
 	LastAttemptAt pgtype.Timestamptz
-	CreatedAt     pgtype.Timestamptz
 	PublishedAt   pgtype.Timestamptz
+	CreatedAt     pgtype.Timestamptz
 }
 
 func ToOutboxModel(domain *outbox.Outbox) Outbox {

@@ -36,7 +36,7 @@ func (r *AccountRepository) Save(ctx context.Context, account *account.Account) 
 	_, err := db.Exec(ctx, query,
 		accountModel.ID,
 		accountModel.ExternalID,
-		accountModel.AccountingType,
+		accountModel.AccountType,
 		accountModel.Balance,
 		accountModel.Currency,
 		accountModel.CreatedAt,
@@ -57,7 +57,7 @@ func (r *AccountRepository) FindByID(ctx context.Context, id account.AccountID) 
 	err := db.QueryRow(ctx, query, id).Scan(
 		&accountModel.ID,
 		&accountModel.ExternalID,
-		&accountModel.AccountingType,
+		&accountModel.AccountType,
 		&accountModel.Balance,
 		&accountModel.Currency,
 		&accountModel.CreatedAt,
@@ -90,7 +90,7 @@ func (r *AccountRepository) FindByExternalID(ctx context.Context, externalID str
 	err := db.QueryRow(ctx, query, externalID).Scan(
 		&accountModel.ID,
 		&accountModel.ExternalID,
-		&accountModel.AccountingType,
+		&accountModel.AccountType,
 		&accountModel.Balance,
 		&accountModel.Currency,
 		&accountModel.CreatedAt,

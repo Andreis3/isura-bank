@@ -23,7 +23,7 @@ func NewOutBoxRepository(db database.Querier) *OutBoxRepository {
 func (r *OutBoxRepository) Save(ctx context.Context, outbox *outbox.Outbox) error {
 	db := resolveDB(ctx, r.db)
 
-	query := `INSERT INTO outboxs (
+	query := `INSERT INTO outbox_events (
 		id,
 		aggregate_id,
 		aggregate_type,
@@ -69,7 +69,7 @@ func (r *OutBoxRepository) FindAllByStatusForUpdateSkipLocked(ctx context.Contex
 		last_attempt_at,
 		created_at,
 		published_at
-	FROM outboxs
+	FROM outbox_events
 	WHERE status = $1
 	LIMIT $2
 	FOR UPDATE SKIP LOCKED
@@ -113,7 +113,7 @@ func (r *OutBoxRepository) UpdateOutboxData(ctx context.Context, outboxID outbox
 	db := resolveDB(ctx, r.db)
 
 	query := `
-	UPDATE outboxs
+	UPDATE outbox_events
 	SET status = $1, attempts = $2, last_attempt_at = $3, published_at = $4
 	WHERE id = $5
 	`
