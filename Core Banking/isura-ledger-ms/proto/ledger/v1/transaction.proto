@@ -1,0 +1,44 @@
+syntax = "proto3";
+
+package ledger.v1;
+
+option go_package = "github.com/andreis3/isura-ledger-ms/internal/transport/grpc/pb/ledger/v1;pb";
+
+// ─── CreateTransaction ───────────────────────────────────────────
+
+message CreateTransactionRequest {
+  string idempotency_key = 1;
+  string debit_account_id = 2;
+  string credit_account_id = 3;
+  int64 amount = 4;
+  string currency = 5;
+}
+
+message CreateTransactionResponse {
+  string transaction_id = 1;
+  string status = 2;
+}
+
+// ─── GetTransaction ───────────────────────────────────────────
+
+message GetTransactionRequest {
+  string transaction_id = 1;
+}
+
+message GetTransactionResponse {
+  string transaction_id = 1;
+  string status = 2;
+  string created_at = 3;
+  string updated_at = 4;
+  repeated EntryResponse entries = 5;
+
+}
+
+message EntryResponse {
+  string entry_id = 1;
+  string direction = 2;
+  int64 amount = 3;
+  string currency = 4;
+  string account_id = 5;
+}
+

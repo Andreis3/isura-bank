@@ -6,13 +6,14 @@ import (
 	"errors"
 	"time"
 
+	"github.com/google/uuid"
+
 	"github.com/andreis3/isura-ledger-ms/internal/application"
 	"github.com/andreis3/isura-ledger-ms/internal/application/event"
 	"github.com/andreis3/isura-ledger-ms/internal/domain/account"
 	"github.com/andreis3/isura-ledger-ms/internal/domain/money"
 	"github.com/andreis3/isura-ledger-ms/internal/domain/outbox"
 	"github.com/andreis3/isura-ledger-ms/internal/domain/transaction"
-	"github.com/google/uuid"
 )
 
 var (

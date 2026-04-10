@@ -1,0 +1,15 @@
+// ledger.proto
+syntax = "proto3";
+package ledger.v1;
+
+import "ledger/v1/transaction.proto";
+import "ledger/v1/account.proto";
+
+option go_package = "github.com/andreis3/isura-ledger-ms/internal/transport/grpc/pb/ledger/v1;pb";
+
+service LedgerService {
+  rpc CreateTransaction (CreateTransactionRequest)  returns (CreateTransactionResponse);
+  rpc GetTransaction    (GetTransactionRequest)      returns (GetTransactionResponse);
+  rpc CreateAccount     (CreateAccountRequest)       returns (CreateAccountResponse);
+  rpc GetBalance        (GetBalanceRequest)          returns (GetBalanceResponse);
+}

@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+package ledger.v1;
+
+option go_package = "github.com/andreis3/isura-ledger-ms/internal/transport/grpc/pb/ledger/v1;pb";
+
+// ─── CreateAccount ───────────────────────────────────────────
+
+message CreateAccountRequest {
+  string external_id = 1;
+  string accounting_type = 2;
+  string currency = 3;
+}
+
+message CreateAccountResponse {
+  string account_id = 1;
+}
+
+// ─── GetBalance ───────────────────────────────────────────
+
+message GetBalanceRequest {
+  string external_account_id = 1;
+}
+
+message GetBalanceResponse {
+  int64 balance = 1;
+  string currency = 2;
+}
