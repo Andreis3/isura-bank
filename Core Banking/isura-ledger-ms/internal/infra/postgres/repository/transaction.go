@@ -15,7 +15,7 @@ type TransactionRepository struct {
 	db database.Querier
 }
 
-func NewTransaction(db database.Querier) *TransactionRepository {
+func NewTransactionRepository(db database.Querier) *TransactionRepository {
 	return &TransactionRepository{db: db}
 }
 

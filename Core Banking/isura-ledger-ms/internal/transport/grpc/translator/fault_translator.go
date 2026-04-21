@@ -1,4 +1,4 @@
-package grpc
+package translator
 
 import (
 	"errors"

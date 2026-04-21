@@ -1,4 +1,4 @@
-package grpc
+package handler
 
 import (
 	"context"
@@ -6,6 +6,7 @@ import (
 	"github.com/andreis3/isura-ledger-ms/internal/application"
 	"github.com/andreis3/isura-ledger-ms/internal/application/command"
 	pb "github.com/andreis3/isura-ledger-ms/internal/transport/grpc/pb/ledger/v1"
+	"github.com/andreis3/isura-ledger-ms/internal/transport/grpc/translator"
 )
 
 type CreateAccountHandler struct {
@@ -31,7 +32,7 @@ func (h *CreateAccountHandler) Handle(ctx context.Context, req *pb.CreateAccount
 
 	accountID, err := h.useCase.Execute(ctx, input)
 	if err != nil {
-		return nil, ToGRPCError(err)
+		return nil, translator.ToGRPCError(err)
 	}
 
 	return &pb.CreateAccountResponse{

@@ -111,7 +111,7 @@ func Wrap(code Code, friendly string, cause error) *DomainError {
 }
 
 func callerName(skip int) string {
-	pc, _, _, ok := runtime.Caller(skip)
+	pc, file, line, ok := runtime.Caller(skip)
 	if !ok {
 		return "unknown"
 	}
@@ -121,14 +121,17 @@ func callerName(skip int) string {
 		return "unknown"
 	}
 
-	// runtime retorna "pkg/path.TypeName.MethodName" — pega só "TypeName.MethodName"
 	full := fn.Name()
-
 	if idx := strings.LastIndex(full, "/"); idx >= 0 {
 		full = full[idx+1:]
-
 	}
-	return full
+
+	// pega só o nome do arquivo sem o path completo
+	if idx := strings.LastIndex(file, "/"); idx >= 0 {
+		file = file[idx+1:]
+	}
+
+	return fmt.Sprintf("%s (%s:%d)", full, file, line)
 }
 
 // Attrs retorna os atributos slog do DomainError para uso em logs.
@@ -138,7 +141,7 @@ func Attrs(err error) []any {
 		return []any{
 			slog.String("error_code", string(de.Code)),
 			slog.String("error_origin", de.Origin),
-			slog.String("error_message", de.FriendlyMessage),
+			slog.String("error_cause", de.Cause.Error()),
 		}
 	}
 	return []any{

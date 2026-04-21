@@ -3,15 +3,18 @@ package grpc
 import (
 	"context"
 
+	"github.com/andreis3/isura-ledger-ms/internal/transport/grpc/handler"
 	pb "github.com/andreis3/isura-ledger-ms/internal/transport/grpc/pb/ledger/v1"
 )
 
+type Handlers map[string]any
+
 type LedgerServer struct {
 	pb.UnimplementedLedgerServiceServer
-	createAccount *CreateAccountHandler
+	createAccount *handler.CreateAccountHandler
 }
 
-func NewLedgerServer(createAccount *CreateAccountHandler) *LedgerServer {
+func NewLedgerServer(createAccount *handler.CreateAccountHandler) *LedgerServer {
 	return &LedgerServer{
 		createAccount: createAccount,
 	}
