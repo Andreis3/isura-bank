@@ -11,10 +11,10 @@ import (
 )
 
 type BaseDeps struct {
-	Config     *configs.Configs
-	Logger     *logger.Logger
-	Prometheus *observability.Prometheus
-	Postgres   *postgres.Postgres
+	Cfg  *configs.Configs
+	Log  *logger.Logger
+	Prom *observability.Prometheus
+	Pg   *postgres.Postgres
 }
 
 func BuildBaseDeps() *BaseDeps {
@@ -27,7 +27,7 @@ func BuildBaseDeps() *BaseDeps {
 
 	prom, err := observability.NewPrometheus()
 	if err != nil {
-		log.CriticalText("failed to initialize prometheus", slog.String("error", err.Error()))
+		log.CriticalText("failed to initialize Prometheus", slog.String("error", err.Error()))
 		os.Exit(1)
 	}
 
@@ -38,9 +38,9 @@ func BuildBaseDeps() *BaseDeps {
 	}
 
 	return &BaseDeps{
-		Config:     cfg,
-		Logger:     log,
-		Prometheus: prom,
-		Postgres:   pg,
+		Cfg:  cfg,
+		Log:  log,
+		Prom: prom,
+		Pg:   pg,
 	}
 }

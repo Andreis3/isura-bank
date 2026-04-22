@@ -8,12 +8,12 @@ import (
 func main() {
 	deps := server.BuildBaseDeps()
 
-	//// gRPC server
-	//server := server.NewServer(deps.Config, deps.Logger, deps.Prometheus, deps.Postgres)
-
 	composer := composition.NewComposer(deps)
 	grpcSrv := composer.GRPCServer()
 
+	httpSrv := server.NewHTTPServer(*deps)
+
 	go grpcSrv.GracefulShutdown()
+	go httpSrv.Start()
 	grpcSrv.Start()
 }

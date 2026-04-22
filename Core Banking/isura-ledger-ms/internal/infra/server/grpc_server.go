@@ -12,27 +12,17 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 
-	"github.com/andreis3/isura-ledger-ms/internal/application"
-	"github.com/andreis3/isura-ledger-ms/internal/infra/configs"
-	"github.com/andreis3/isura-ledger-ms/internal/infra/observability"
-	"github.com/andreis3/isura-ledger-ms/internal/infra/postgres"
 	grpcTransport "github.com/andreis3/isura-ledger-ms/internal/transport/grpc"
 	"github.com/andreis3/isura-ledger-ms/internal/transport/grpc/interceptor"
 )
 
 type GRPCServer struct {
 	grpcServer *grpc.Server
-	prometheus *observability.Prometheus
-	pool       *postgres.Postgres
-	log        application.Logger
-	cfg        *configs.Configs
+	deps       *BaseDeps
 }
 
 func NewGRPCServer(
-	cfg *configs.Configs,
-	log application.Logger,
-	prometheus *observability.Prometheus,
-	pool *postgres.Postgres,
+	deps *BaseDeps,
 	ledgerServer *grpcTransport.LedgerServer,
 ) *GRPCServer {
 	start := time.Now()
@@ -40,8 +30,8 @@ func NewGRPCServer(
 	// gRPC server com interceptors
 	grpcServer := grpc.NewServer(
 		grpc.ChainUnaryInterceptor(
-			interceptor.LoggingInterceptor(log.SlogJSON()),
-			interceptor.MetricsInterceptor(prometheus)),
+			interceptor.LoggingInterceptor(deps.Log.SlogJSON()),
+			interceptor.MetricsInterceptor(deps.Prom)),
 	)
 
 	// registra todos os módulos
@@ -49,23 +39,20 @@ func NewGRPCServer(
 	registry.RegisterAll()
 	reflection.Register(grpcServer)
 
-	log.InfoText("ledger-svc started",
-		slog.String("grpc_port", cfg.Servers.GRPC.Port),
-		slog.String("metrics_port", cfg.Servers.HTTP.Port),
+	deps.Log.InfoText("ledger-svc started",
+		slog.String("grpc_port", deps.Cfg.Servers.GRPC.Port),
+		slog.String("metrics_port", deps.Cfg.Servers.HTTP.Port),
 		slog.String("startup_time", time.Since(start).String()),
 	)
 
 	return &GRPCServer{
-		prometheus: prometheus,
-		pool:       pool,
-		log:        log,
-		cfg:        cfg,
+		deps:       deps,
 		grpcServer: grpcServer,
 	}
 }
 
 func (s *GRPCServer) Start() error {
-	lis, err := net.Listen("tcp", fmt.Sprintf(":%s", s.cfg.Servers.GRPC.Port))
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%s", s.deps.Cfg.Servers.GRPC.Port))
 	if err != nil {
 		return err
 	}
@@ -78,17 +65,17 @@ func (s *GRPCServer) GracefulShutdown() {
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 	<-quit
 
-	s.log.InfoText("ledger-svc shutting down...")
+	s.deps.Log.InfoText("ledger-svc shutting down...")
 
 	// para o gRPC gracefully — espera requests em andamento terminarem
 	s.grpcServer.GracefulStop()
 
 	//fecha postgres
-	s.pool.Close()
+	s.deps.Pg.Close()
 
 	// fecha o prometheus
-	s.prometheus.Close()
+	s.deps.Prom.Close()
 
-	s.log.InfoText("shutdown complete")
+	s.deps.Log.InfoText("shutdown complete")
 	os.Exit(0)
 }

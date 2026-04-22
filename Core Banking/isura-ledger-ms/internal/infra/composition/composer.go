@@ -24,44 +24,38 @@ func NewComposer(baseDeps *server.BaseDeps) *Composer {
 
 func (c *Composer) GRPCServer() *server.GRPCServer {
 
-	// repositories
 	accountRepo := c.buildAccountRepo()
-	//transactionRepo := c.buildTransactionRepo()
-	//outboxRepo := c.buildOutboxRepo()
-	//uow := uow.NewUnitOfWork(c.deps.Postgres)
 
 	// use cases
-	createAccount := command.NewCreateAccount(accountRepo, c.deps.Logger)
-	//createTransaction := command.NewCreateTransaction(uow, accountRepo, transactionRepo, outboxRepo, c.deps.Logger)
+	createAccount := command.NewCreateAccount(accountRepo, c.deps.Log)
 
 	// handlers
-	createAccountHandler := handler.NewCreateAccountHandler(createAccount, c.deps.Logger)
-	//createTransactionHandler := grpcTransport.NewCreateTransactionHandler(createTransaction, c.deps.Logger)
+	createAccountHandler := handler.NewCreateAccountHandler(createAccount, c.deps.Log)
 
 	// server
 	ledgerServer := grpcTransport.NewLedgerServer(createAccountHandler)
 
 	// server
-	return server.NewGRPCServer(c.deps.Config, c.deps.Logger, c.deps.Prometheus, c.deps.Postgres, ledgerServer)
+	return server.NewGRPCServer(c.deps, ledgerServer)
 }
 
 func (c *Composer) buildAccountRepo() account.Repository {
 	return metrics.NewMetricsAccountRepo(
-		repository.NewAccountRepository(c.deps.Postgres),
-		c.deps.Prometheus,
+		repository.NewAccountRepository(c.deps.Pg),
+		c.deps.Prom,
 	)
 }
 
 func (c *Composer) buildTransactionRepo() transaction.Repository {
 	return metrics.NewMetricsTransactionRepo(
-		repository.NewTransactionRepository(c.deps.Postgres),
-		c.deps.Prometheus,
+		repository.NewTransactionRepository(c.deps.Pg),
+		c.deps.Prom,
 	)
 }
 
 func (c *Composer) buildOutboxRepo() outbox.Repository {
 	return metrics.NewMetricsOutboxRepo(
-		repository.NewOutBoxRepository(c.deps.Postgres),
-		c.deps.Prometheus,
+		repository.NewOutBoxRepository(c.deps.Pg),
+		c.deps.Prom,
 	)
 }
