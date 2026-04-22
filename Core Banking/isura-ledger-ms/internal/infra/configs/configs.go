@@ -39,20 +39,22 @@ type Postgres struct {
 	Database        string        `mapstructure:"database"`
 	SSLMode         string        `mapstructure:"ssl_mode"`
 	MaxConnections  int32         `mapstructure:"max_connections"`
-	MinConnections  int32         `mapstructure:"max_connections"`
+	MinConnections  int32         `mapstructure:"min_connections"`
 	MaxConnLifetime time.Duration `mapstructure:"max_conn_lifetime"`
 	MaxConnIdleTime time.Duration `mapstructure:"max_conn_idle_time"`
 }
 
 func LoadConfig() *Configs {
-	viper.SetConfigName("config") // nome do arquivo sem extensão
-	viper.SetConfigType("json")   // tipo do arquivo
-	viper.AddConfigPath(".")      // procura na raiz do projeto
+	viper.SetConfigName("config")
+	viper.SetConfigType("json")
+	viper.AddConfigPath(".")
 
 	err := viper.ReadInConfig()
 	if err != nil {
 		return nil
 	}
+
+	bindEnvs()
 
 	var configs Configs
 	err = viper.Unmarshal(&configs)
@@ -63,4 +65,18 @@ func LoadConfig() *Configs {
 	os.Setenv("ENV", configs.Env)
 
 	return &configs
+}
+
+// bindEnvs mapeia variáveis de ambiente para as chaves do config.json.
+// Env vars têm precedência sobre o arquivo de configuração.
+func bindEnvs() {
+	viper.BindEnv("env", "APP_ENV")
+	viper.BindEnv("servers.grpc.port", "GRPC_PORT")
+	viper.BindEnv("servers.http.port", "HTTP_PORT")
+	viper.BindEnv("data_base.postgres.host", "POSTGRES_HOST")
+	viper.BindEnv("data_base.postgres.port", "POSTGRES_PORT")
+	viper.BindEnv("data_base.postgres.user", "POSTGRES_USER")
+	viper.BindEnv("data_base.postgres.password", "POSTGRES_PASSWORD")
+	viper.BindEnv("data_base.postgres.database", "POSTGRES_DB")
+	viper.BindEnv("data_base.postgres.ssl_mode", "POSTGRES_SSL_MODE")
 }
