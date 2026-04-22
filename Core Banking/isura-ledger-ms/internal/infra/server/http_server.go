@@ -7,8 +7,6 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
-	"os/signal"
-	"syscall"
 	"time"
 
 	"github.com/go-chi/chi/v5"
@@ -58,20 +56,9 @@ func (s *HTTPServer) Start() {
 	}
 }
 
-func (s *HTTPServer) GracefulShutdown() {
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
-	<-quit
-
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-
-	s.deps.Log.InfoText("http server shutting down...")
-
+func (s *HTTPServer) Stop(ctx context.Context) {
 	if err := s.server.Shutdown(ctx); err != nil {
 		s.deps.Log.ErrorText("http server shutdown error",
 			slog.String("error", err.Error()))
 	}
-
-	s.deps.Log.InfoText("http server shutdown complete")
 }

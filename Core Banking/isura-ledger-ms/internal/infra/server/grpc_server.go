@@ -5,8 +5,6 @@ import (
 	"log/slog"
 	"net"
 	"os"
-	"os/signal"
-	"syscall"
 	"time"
 
 	"google.golang.org/grpc"
@@ -51,31 +49,21 @@ func NewGRPCServer(
 	}
 }
 
-func (s *GRPCServer) Start() error {
+func (s *GRPCServer) Start() {
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%s", s.deps.Cfg.Servers.GRPC.Port))
 	if err != nil {
-		return err
+		s.deps.Log.CriticalText("grpc server failed to listen",
+			slog.String("error", err.Error()))
+		os.Exit(1)
 	}
 
-	return s.grpcServer.Serve(lis)
+	if err := s.grpcServer.Serve(lis); err != nil {
+		s.deps.Log.CriticalText("grpc server failed to serve",
+			slog.String("error", err.Error()))
+		os.Exit(1)
+	}
 }
 
-func (s *GRPCServer) GracefulShutdown() {
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
-	<-quit
-
-	s.deps.Log.InfoText("ledger-svc shutting down...")
-
-	// para o gRPC gracefully — espera requests em andamento terminarem
+func (s *GRPCServer) Stop() {
 	s.grpcServer.GracefulStop()
-
-	//fecha postgres
-	s.deps.Pg.Close()
-
-	// fecha o prometheus
-	s.deps.Prom.Close()
-
-	s.deps.Log.InfoText("shutdown complete")
-	os.Exit(0)
 }

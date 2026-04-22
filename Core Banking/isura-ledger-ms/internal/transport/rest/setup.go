@@ -27,6 +27,6 @@ func Setup(deps *SetupDeps) {
 func BuildRoutes(deps *SetupDeps) []ModuleRoutes {
 	return []ModuleRoutes{
 		module.NewHealthCheck(deps.Postgres, deps.Conf.ApplicationName),
-		//module.NewMetrics(),
+		module.NewMetrics(),
 	}
 }
