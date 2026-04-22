@@ -32,7 +32,7 @@ func NewHTTPServer(deps BaseDeps) *HTTPServer {
 	})
 
 	server := &http.Server{
-		Addr:    fmt.Sprintf(":%s", deps.Cfg.Servers.HTTP.Port),
+		Addr:    fmt.Sprintf("0.0.0.0:%s", deps.Cfg.Servers.HTTP.Port),
 		Handler: mux,
 	}
 
