@@ -1,0 +1,54 @@
+services:
+  postgres:
+    image: postgres:18.3
+    container_name: isura-ledger-postgres
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d isura-ledger"]
+      interval: 5s
+      timeout: 2s
+      retries: 5
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: isura-ledger
+    ports:
+      - "5432:5432"
+    command: ["postgres", "-c", "synchronous_commit=off"]
+
+  tempo:
+    image: grafana/tempo:2.4.1
+    container_name: isura-ledger-tempo
+    ports:
+      - "3200:3200"  # HTTP
+      - "4317:4317"  # OTLP gRPC
+      - "4318:4318"  # OTLP HTTP ← o ledger envia aqui
+    command: [ "--config.file=/etc/tempo.yaml" ]
+    volumes:
+      - ./docker/tempo/tempo.yaml:/etc/tempo.yaml
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: isura-ledger-prometheus
+    ports:
+      - "9091:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: isura-ledger-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    depends_on:
+      - prometheus
+      - tempo
+
+
+
+
+volumes:
+  ledger-data:

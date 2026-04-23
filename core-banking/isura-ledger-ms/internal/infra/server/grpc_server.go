@@ -29,7 +29,9 @@ func NewGRPCServer(
 	grpcServer := grpc.NewServer(
 		grpc.ChainUnaryInterceptor(
 			interceptor.LoggingInterceptor(deps.Log.SlogJSON()),
-			interceptor.MetricsInterceptor(deps.Prom)),
+			interceptor.MetricsInterceptor(deps.Prom),
+			interceptor.TracingInterceptor(deps.Tracer),
+		),
 	)
 
 	// registra todos os módulos

@@ -8,11 +8,12 @@ import (
 )
 
 type Configs struct {
-	ApplicationName string   `mapstructure:"application_name"`
-	Env             string   `mapstructure:"env"`
-	Servers         Servers  `mapstructure:"servers"`
-	DataBase        DataBase `mapstructure:"data_base"`
-	Version         string   `mapstructure:"version"`
+	ApplicationName string        `mapstructure:"application_name"`
+	Env             string        `mapstructure:"env"`
+	Servers         Servers       `mapstructure:"servers"`
+	DataBase        DataBase      `mapstructure:"data_base"`
+	OpenTelemetry   OpemTelemetry `mapstructure:"open_telemetry"`
+	Version         string        `mapstructure:"version"`
 }
 
 type Servers struct {
@@ -29,6 +30,10 @@ type HTTP struct {
 
 type DataBase struct {
 	Postgres Postgres `mapstructure:"postgres"`
+}
+
+type OpemTelemetry struct {
+	Host string `mapstructure:"host"`
 }
 
 type Postgres struct {
@@ -79,4 +84,9 @@ func bindEnvs() {
 	viper.BindEnv("data_base.postgres.password", "POSTGRES_PASSWORD")
 	viper.BindEnv("data_base.postgres.database", "POSTGRES_DB")
 	viper.BindEnv("data_base.postgres.ssl_mode", "POSTGRES_SSL_MODE")
+	viper.BindEnv("data_base.postgres.max_connections", "POSTGRES_MAX_CONNECTIONS")
+	viper.BindEnv("data_base.postgres.min_connections", "POSTGRES_MIN_CONNECTIONS")
+	viper.BindEnv("data_base.postgres.max_conn_lifetime", "POSTGRES_MAX_CONN_LIFETIME")
+	viper.BindEnv("data_base.postgres.max_conn_idle_time", "POSTGRES_MAX_CONN_IDLE_TIME")
+	viper.BindEnv("open_telemetry.host", "OTEL_HOST")
 }

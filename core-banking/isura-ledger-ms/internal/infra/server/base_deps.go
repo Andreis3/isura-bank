@@ -1,9 +1,11 @@
 package server
 
 import (
+	"context"
 	"log/slog"
 	"os"
 
+	"github.com/andreis3/isura-ledger-ms/internal/application"
 	"github.com/andreis3/isura-ledger-ms/internal/infra/configs"
 	"github.com/andreis3/isura-ledger-ms/internal/infra/logger"
 	"github.com/andreis3/isura-ledger-ms/internal/infra/observability"
@@ -11,10 +13,12 @@ import (
 )
 
 type BaseDeps struct {
-	Cfg  *configs.Configs
-	Log  *logger.Logger
-	Prom *observability.Prometheus
-	Pg   *postgres.Postgres
+	Cfg            *configs.Configs
+	Log            *logger.Logger
+	Prom           *observability.Prometheus
+	Pg             *postgres.Postgres
+	Tracer         application.Tracer
+	TracerShutdown func(context.Context) error
 }
 
 func BuildBaseDeps() *BaseDeps {
@@ -37,10 +41,18 @@ func BuildBaseDeps() *BaseDeps {
 		os.Exit(1)
 	}
 
+	tracer, tracerShutdown, err := observability.InitOtelTracer(context.Background(), cfg)
+	if err != nil {
+		log.CriticalText("failed to initialize tracer", slog.String("error", err.Error()))
+		os.Exit(1)
+	}
+
 	return &BaseDeps{
-		Cfg:  cfg,
-		Log:  log,
-		Prom: prom,
-		Pg:   pg,
+		Cfg:            cfg,
+		Log:            log,
+		Prom:           prom,
+		Pg:             pg,
+		Tracer:         tracer,
+		TracerShutdown: tracerShutdown,
 	}
 }
