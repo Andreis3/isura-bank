@@ -34,23 +34,31 @@ type CreateTransaction struct {
 	accountRepository     account.Repository
 	transactionRepository transaction.Repository
 	outboxRepository      outbox.Repository
+	tracer                application.Tracer
 }
 
 func NewCreateTransaction(uow application.UnitOfWork,
 	accountRepository account.Repository,
 	transactionRepository transaction.Repository,
-	outboxRepository outbox.Repository) *CreateTransaction {
+	outboxRepository outbox.Repository,
+	tracer application.Tracer,
+) *CreateTransaction {
 	return &CreateTransaction{
 		uow:                   uow,
 		accountRepository:     accountRepository,
 		transactionRepository: transactionRepository,
 		outboxRepository:      outboxRepository,
+		tracer:                tracer,
 	}
 }
 
 func (c *CreateTransaction) Execute(ctx context.Context, input CreateTransactionInput) error {
+	ctx, span := c.tracer.Start(ctx, "CreateTransaction.Execute")
+	defer span.End()
+
 	existingTransaction, err := c.transactionRepository.ExistsByIdempotencyKey(ctx, input.IdempotencyKey)
 	if err != nil {
+		span.RecordError(err)
 		return err
 	}
 
@@ -60,24 +68,29 @@ func (c *CreateTransaction) Execute(ctx context.Context, input CreateTransaction
 
 	debitAccount, err := c.accountRepository.FindByID(ctx, input.DebitAccountID)
 	if err != nil {
+		span.RecordError(err)
 		return err
 	}
 
 	if debitAccount == nil {
+		span.RecordError(ErrInsufficientBalance)
 		return account.ErrAccountNotFound
 	}
 
 	creditAccount, err := c.accountRepository.FindByID(ctx, input.CreditAccountID)
 	if err != nil {
+		span.RecordError(err)
 		return err
 	}
 
 	if creditAccount == nil {
+		span.RecordError(ErrInsufficientBalance)
 		return account.ErrAccountNotFound
 	}
 
 	amount, err := money.NewMoney(input.Amount, input.Currency)
 	if err != nil {
+		span.RecordError(err)
 		return err
 	}
 
@@ -114,46 +127,55 @@ func (c *CreateTransaction) Execute(ctx context.Context, input CreateTransaction
 			transaction.TransactionID(transactionID),
 		)
 		if err != nil {
+			span.RecordError(err)
 			return err
 		}
 
 		debitAccount.Balance, err = debitAccount.Balance.Subtract(amount)
 		if err != nil {
+			span.RecordError(err)
 			return err
 		}
 
 		creditAccount.Balance, err = creditAccount.Balance.Add(amount)
 		if err != nil {
+			span.RecordError(err)
 			return err
 		}
 
 		err = newTransaction.AddEntry(newDebitEntry)
 		if err != nil {
+			span.RecordError(err)
 			return err
 		}
 
 		err = newTransaction.AddEntry(newCreditEntry)
 		if err != nil {
+			span.RecordError(err)
 			return err
 		}
 
 		err = newTransaction.Complete()
 		if err != nil {
+			span.RecordError(err)
 			return err
 		}
 
 		err = c.transactionRepository.Save(ctxTx, newTransaction)
 		if err != nil {
+			span.RecordError(err)
 			return err
 		}
 
 		err = c.accountRepository.UpdateBalance(ctxTx, debitAccount.ID, debitAccount.Balance)
 		if err != nil {
+			span.RecordError(err)
 			return err
 		}
 
 		err = c.accountRepository.UpdateBalance(ctxTx, creditAccount.ID, creditAccount.Balance)
 		if err != nil {
+			span.RecordError(err)
 			return err
 		}
 
@@ -168,6 +190,7 @@ func (c *CreateTransaction) Execute(ctx context.Context, input CreateTransaction
 			OccurredAt:      time.Now(),
 		})
 		if err != nil {
+			span.RecordError(err)
 			return err
 		}
 

@@ -65,7 +65,7 @@ func InitOtelTracer(ctx context.Context, cfg *configs.Configs) (application.Trac
 			semconv.ServiceName(cfg.ApplicationName),
 			semconv.ServiceVersion(cfg.Version),
 		),
-		sdkresource.WithProcess(),
+		//sdkresource.WithProcess(),
 		sdkresource.WithOS(),
 		sdkresource.WithHost(),
 	)

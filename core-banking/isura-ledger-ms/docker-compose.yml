@@ -47,8 +47,26 @@ services:
       - prometheus
       - tempo
 
-
-
+  ledger:
+    build:
+        context: .
+        dockerfile: Dockerfile.local
+    container_name: isura-ledger-ledger
+    restart: always
+    ports:
+      - "50051:50051"
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      - USER=ledger
+      - ENV=local
+      - POSTGRES_HOST=isura-ledger-postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=admin
+      - POSTGRES_DATABASE=isura-ledger
 
 volumes:
   ledger-data:

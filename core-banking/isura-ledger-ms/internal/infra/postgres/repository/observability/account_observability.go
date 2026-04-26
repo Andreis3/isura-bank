@@ -1,4 +1,4 @@
-package metrics
+package observability
 
 import (
 	"context"
@@ -9,19 +9,24 @@ import (
 	"github.com/andreis3/isura-ledger-ms/internal/domain/money"
 )
 
-type MetricsAccountRepo struct {
+type ObservabilityAccountRepo struct {
 	repo   account.Repository
 	metric application.Metrics
+	tracer application.Tracer
 }
 
-func NewMetricsAccountRepo(repo account.Repository, metric application.Metrics) *MetricsAccountRepo {
-	return &MetricsAccountRepo{
+func NewObservabilityAccountRepo(repo account.Repository, metric application.Metrics, tracer application.Tracer) *ObservabilityAccountRepo {
+	return &ObservabilityAccountRepo{
 		repo:   repo,
 		metric: metric,
+		tracer: tracer,
 	}
 }
 
-func (r *MetricsAccountRepo) Save(ctx context.Context, account *account.Account) error {
+func (r *ObservabilityAccountRepo) Save(ctx context.Context, account *account.Account) error {
+	ctx, span := r.tracer.Start(ctx, "AccountRepository.Save")
+	defer span.End()
+
 	start := time.Now()
 	defer func() {
 		r.metric.RecordDBQueryDuration(
@@ -34,13 +39,17 @@ func (r *MetricsAccountRepo) Save(ctx context.Context, account *account.Account)
 	err := r.repo.Save(ctx, account)
 
 	if err != nil {
+		span.RecordError(err)
 		return err
 	}
 
 	return nil
 }
 
-func (r *MetricsAccountRepo) FindByID(ctx context.Context, id account.AccountID) (*account.Account, error) {
+func (r *ObservabilityAccountRepo) FindByID(ctx context.Context, id account.AccountID) (*account.Account, error) {
+	ctx, span := r.tracer.Start(ctx, "AccountRepository.FindByID")
+	defer span.End()
+
 	start := time.Now()
 	defer func() {
 		r.metric.RecordDBQueryDuration(
@@ -50,16 +59,20 @@ func (r *MetricsAccountRepo) FindByID(ctx context.Context, id account.AccountID)
 			float64(time.Since(start).Milliseconds()))
 	}()
 
-	account, err := r.repo.FindByID(ctx, id)
+	accountResponse, err := r.repo.FindByID(ctx, id)
 
 	if err != nil {
+		span.RecordError(err)
 		return nil, err
 	}
 
-	return account, nil
+	return accountResponse, nil
 }
 
-func (r *MetricsAccountRepo) FindByExternalID(ctx context.Context, externalID string) (*account.Account, error) {
+func (r *ObservabilityAccountRepo) FindByExternalID(ctx context.Context, externalID string) (*account.Account, error) {
+	ctx, span := r.tracer.Start(ctx, "AccountRepository.FindByExternalID")
+	defer span.End()
+
 	start := time.Now()
 	defer func() {
 		r.metric.RecordDBQueryDuration(
@@ -69,16 +82,20 @@ func (r *MetricsAccountRepo) FindByExternalID(ctx context.Context, externalID st
 			float64(time.Since(start).Milliseconds()))
 	}()
 
-	account, err := r.repo.FindByExternalID(ctx, externalID)
+	accountResponse, err := r.repo.FindByExternalID(ctx, externalID)
 
 	if err != nil {
+		span.RecordError(err)
 		return nil, err
 	}
 
-	return account, nil
+	return accountResponse, nil
 }
 
-func (r *MetricsAccountRepo) UpdateBalance(ctx context.Context, accountID account.AccountID, balance money.Money) error {
+func (r *ObservabilityAccountRepo) UpdateBalance(ctx context.Context, accountID account.AccountID, balance money.Money) error {
+	ctx, span := r.tracer.Start(ctx, "AccountRepository.UpdateBalance")
+	defer span.End()
+
 	start := time.Now()
 	defer func() {
 		r.metric.RecordDBQueryDuration(
@@ -91,13 +108,17 @@ func (r *MetricsAccountRepo) UpdateBalance(ctx context.Context, accountID accoun
 	err := r.repo.UpdateBalance(ctx, accountID, balance)
 
 	if err != nil {
+		span.RecordError(err)
 		return err
 	}
 
 	return nil
 }
 
-func (r *MetricsAccountRepo) FindBalanceByID(ctx context.Context, accountID account.AccountID) (money.Money, error) {
+func (r *ObservabilityAccountRepo) FindBalanceByID(ctx context.Context, accountID account.AccountID) (money.Money, error) {
+	ctx, span := r.tracer.Start(ctx, "AccountRepository.FindBalanceByID")
+	defer span.End()
+
 	start := time.Now()
 	defer func() {
 		r.metric.RecordDBQueryDuration(
@@ -109,13 +130,17 @@ func (r *MetricsAccountRepo) FindBalanceByID(ctx context.Context, accountID acco
 
 	balance, err := r.repo.FindBalanceByID(ctx, accountID)
 	if err != nil {
+		span.RecordError(err)
 		return money.Money{}, err
 	}
 
 	return balance, nil
 }
 
-func (r *MetricsAccountRepo) FindBalanceForUpdateByID(ctx context.Context, accountID account.AccountID) (money.Money, error) {
+func (r *ObservabilityAccountRepo) FindBalanceForUpdateByID(ctx context.Context, accountID account.AccountID) (money.Money, error) {
+	ctx, span := r.tracer.Start(ctx, "AccountRepository.FindBalanceForUpdateByID")
+	defer span.End()
+
 	start := time.Now()
 	defer func() {
 		r.metric.RecordDBQueryDuration(
@@ -127,6 +152,7 @@ func (r *MetricsAccountRepo) FindBalanceForUpdateByID(ctx context.Context, accou
 
 	balance, err := r.repo.FindBalanceForUpdateByID(ctx, accountID)
 	if err != nil {
+		span.RecordError(err)
 		return money.Money{}, err
 	}
 

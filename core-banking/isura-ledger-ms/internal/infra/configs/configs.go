@@ -1,7 +1,9 @@
 package configs
 
 import (
+	"errors"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/spf13/viper"
@@ -53,40 +55,44 @@ func LoadConfig() *Configs {
 	viper.SetConfigName("config")
 	viper.SetConfigType("json")
 	viper.AddConfigPath(".")
+	viper.AddConfigPath("/")
+	viper.AutomaticEnv()
+	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "__"))
 
-	err := viper.ReadInConfig()
-	if err != nil {
-		return nil
+	if err := viper.ReadInConfig(); err != nil {
+		if _, ok := errors.AsType[viper.ConfigFileNotFoundError](err); !ok {
+			return nil
+		}
 	}
 
 	bindEnvs()
 
 	var configs Configs
-	err = viper.Unmarshal(&configs)
-	if err != nil {
+	if err := viper.Unmarshal(&configs); err != nil {
 		return nil
 	}
 
-	os.Setenv("ENV", configs.Env)
-
+	_ = os.Setenv("ENV", configs.Env)
 	return &configs
 }
 
 // bindEnvs mapeia variáveis de ambiente para as chaves do config.json.
 // Env vars têm precedência sobre o arquivo de configuração.
 func bindEnvs() {
-	viper.BindEnv("env", "APP_ENV")
-	viper.BindEnv("servers.grpc.port", "GRPC_PORT")
-	viper.BindEnv("servers.http.port", "HTTP_PORT")
-	viper.BindEnv("data_base.postgres.host", "POSTGRES_HOST")
-	viper.BindEnv("data_base.postgres.port", "POSTGRES_PORT")
-	viper.BindEnv("data_base.postgres.user", "POSTGRES_USER")
-	viper.BindEnv("data_base.postgres.password", "POSTGRES_PASSWORD")
-	viper.BindEnv("data_base.postgres.database", "POSTGRES_DB")
-	viper.BindEnv("data_base.postgres.ssl_mode", "POSTGRES_SSL_MODE")
-	viper.BindEnv("data_base.postgres.max_connections", "POSTGRES_MAX_CONNECTIONS")
-	viper.BindEnv("data_base.postgres.min_connections", "POSTGRES_MIN_CONNECTIONS")
-	viper.BindEnv("data_base.postgres.max_conn_lifetime", "POSTGRES_MAX_CONN_LIFETIME")
-	viper.BindEnv("data_base.postgres.max_conn_idle_time", "POSTGRES_MAX_CONN_IDLE_TIME")
-	viper.BindEnv("open_telemetry.host", "OTEL_HOST")
+	_ = viper.BindEnv("env", "APP_ENV")
+	_ = viper.BindEnv("application_name", "APPLICATION_NAME")
+	_ = viper.BindEnv("Version", "VERSION")
+	_ = viper.BindEnv("servers.grpc.port", "GRPC_PORT")
+	_ = viper.BindEnv("servers.http.port", "HTTP_PORT")
+	_ = viper.BindEnv("data_base.postgres.host", "POSTGRES_HOST")
+	_ = viper.BindEnv("data_base.postgres.port", "POSTGRES_PORT")
+	_ = viper.BindEnv("data_base.postgres.user", "POSTGRES_USER")
+	_ = viper.BindEnv("data_base.postgres.password", "POSTGRES_PASSWORD")
+	_ = viper.BindEnv("data_base.postgres.database", "POSTGRES_DB")
+	_ = viper.BindEnv("data_base.postgres.ssl_mode", "POSTGRES_SSL_MODE")
+	_ = viper.BindEnv("data_base.postgres.max_connections", "POSTGRES_MAX_CONNECTIONS")
+	_ = viper.BindEnv("data_base.postgres.min_connections", "POSTGRES_MIN_CONNECTIONS")
+	_ = viper.BindEnv("data_base.postgres.max_conn_lifetime", "POSTGRES_MAX_CONN_LIFETIME")
+	_ = viper.BindEnv("data_base.postgres.max_conn_idle_time", "POSTGRES_MAX_CONN_IDLE_TIME")
+	_ = viper.BindEnv("open_telemetry.host", "OTEL_HOST")
 }
