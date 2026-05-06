@@ -6,6 +6,58 @@ A digital banking platform built with microservices architecture, Domain-Driven 
 
 ---
 
+## Getting Started
+
+### Prerequisites
+
+- Go 1.26.1+
+- Docker + Docker Compose
+- [buf](https://buf.build) — Protobuf toolchain
+
+### Installing buf
+
+```bash
+go install github.com/bufbuild/buf/cmd/buf@latest
+```
+
+Verify the installation:
+
+```bash
+buf --version
+```
+
+If the command is not found, ensure `$GOPATH/bin` is in your `$PATH`:
+
+```bash
+export PATH="$PATH:$(go env GOPATH)/bin"
+```
+
+### Generating gRPC code
+
+Proto files are organized under `proto/ledger/v1/` and managed via `buf.yaml` and `buf.gen.yaml` at the project root.
+
+From the service root directory:
+
+```bash
+buf generate
+```
+
+This generates the Go stubs into `internal/transport/grpc/pb/ledger/v1/`.
+
+To lint the proto files before generating:
+
+```bash
+buf lint
+```
+
+To check for breaking changes against the previous version:
+
+```bash
+buf breaking --against '.git#branch=main'
+```
+
+---
+
 ## Repositories
 
 | Service | Domain | Priority | Status |
@@ -111,6 +163,8 @@ A digital banking platform built with microservices architecture, Domain-Driven 
 **No circular dependencies between aggregates** — aggregates reference each other only by ID, never by the full type.
 
 ---
+
+
 
 ## References
 

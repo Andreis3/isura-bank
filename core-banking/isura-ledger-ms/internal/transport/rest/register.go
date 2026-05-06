@@ -1,7 +1,6 @@
 package rest
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
@@ -53,8 +52,6 @@ func (r *RegisterRoutes) registerRoutes(routeDefs types.RouteType) {
 // 2) Applying middlewares (if any),
 // 3) Registering the handler correctly.
 func (r *RegisterRoutes) attachRoute(route types.RouteFields) {
-	methodAndPath := fmt.Sprintf("%s %s", route.Method, route.Path)
-	r.log.InfoText("[RegisterRoutes] ", "MAPPED_ROUTES", fmt.Sprintf("%s - %s", methodAndPath, route.Description))
 
 	// If middlewares exist, we apply them via .With(...)
 	// and register within a .Group

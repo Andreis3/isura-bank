@@ -39,9 +39,8 @@ func NewGRPCServer(
 	registry.RegisterAll()
 	reflection.Register(grpcServer)
 
-	deps.Log.InfoText("ledger-svc started",
-		slog.String("grpc_port", deps.Cfg.Servers.GRPC.Port),
-		slog.String("metrics_port", deps.Cfg.Servers.HTTP.Port),
+	deps.Log.InfoText("GRPC server started",
+		slog.String("port", deps.Cfg.Servers.GRPC.Port),
 		slog.String("startup_time", time.Since(start).String()),
 	)
 

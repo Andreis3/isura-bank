@@ -51,7 +51,9 @@ services:
     build:
         context: .
         dockerfile: Dockerfile.local
-    container_name: isura-ledger-ledger
+    container_name: isura-ledger-ms
+    volumes:
+      - .:/app  # Monta o código fonte para dentro do container
     restart: always
     ports:
       - "50051:50051"

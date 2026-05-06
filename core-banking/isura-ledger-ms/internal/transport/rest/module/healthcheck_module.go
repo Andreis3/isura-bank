@@ -26,7 +26,6 @@ func (r *HealthCheck) Routes() types.RouteType {
 			Method:      http.MethodGet,
 			Path:        "/health",
 			Handler:     handler.HealthCheck(r.pg, r.serviceName),
-			Description: "Health Check",
 			Middlewares: types.Middlewares{},
 		},
 	}
