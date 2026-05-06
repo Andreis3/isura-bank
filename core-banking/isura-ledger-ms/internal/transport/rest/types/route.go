@@ -7,10 +7,9 @@ type RouteType []RouteFields
 type Middlewares []func(http.Handler) http.Handler
 
 type RouteFields struct {
-	Method      string
-	Path        string
-	Handler     any
-	Description string
+	Method  string
+	Path    string
+	Handler any
 	Middlewares
 }
 

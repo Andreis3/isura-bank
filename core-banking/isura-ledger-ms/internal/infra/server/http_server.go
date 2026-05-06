@@ -36,7 +36,7 @@ func NewHTTPServer(deps BaseDeps) *HTTPServer {
 		Handler: mux,
 	}
 
-	deps.Log.InfoText("http server started",
+	deps.Log.InfoText("HTTP server started",
 		slog.String("port", deps.Cfg.Servers.HTTP.Port),
 		slog.String("startup_time", time.Since(start).String()),
 	)
